@@ -1,0 +1,3 @@
+/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/edit_cache.dir
+/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/LexicalParser.dir
