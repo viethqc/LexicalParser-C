@@ -4,7 +4,14 @@
 
 int main() {
     CParser a;
-    a.CheckGrammar("id + id * id");
+    if (a.CheckGrammar("id + id * id / id") == true)
+    {
+        printf("Van pham hop le\n");
+    }
+    else
+    {
+        printf("Van pham khong hop le\n");
+    }
 
     return 0;
 }

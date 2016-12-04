@@ -51,6 +51,7 @@ private:
     bool ConstructParseTable();
     void PrintParseTable(vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, unordered_map<string, string>> mParseTable);
     bool StackToString(stack<string> sStack, string &strStack);
+    bool VectorToString(vector<string> vList, string &strList);
 
 public:
     bool CheckGrammar(string strToken);

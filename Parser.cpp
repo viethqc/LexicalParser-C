@@ -156,8 +156,12 @@ bool CParser::CheckGrammar(string strToken)
 {
     vector<string> vToken;
     stack<string> sStack;
+    vector<string> vList;
+    string strLeft;
     string strTop;
     string strStack;
+    string strVector;
+    string strAction;
     int i = 0;
     bool bResult = false;
 
@@ -189,15 +193,18 @@ bool CParser::CheckGrammar(string strToken)
     {
         cout << vToken.at(i) << " ";
     }
+    cout << endl;
 
     //Phan tich cu phap
     sStack.push("$");
     sStack.push(m_strStart);
 
-    printf("%-15s%-15s%-30s", "Stack", "Input", "Action");
+    printf("%-30s%-30s%-30s\n", "Stack", "Input", "Action");
     while (sStack.empty() == false && vToken.size() != 0)
     {
         StackToString(sStack, strStack);
+        VectorToString(vToken, strVector);
+        strAction.clear();
         strTop = sStack.top();
         if (strTop.compare("$") == 0 && vToken.at(0).compare("$") == 0)
         {
@@ -211,11 +218,47 @@ bool CParser::CheckGrammar(string strToken)
             continue;
         }
 
-        if (IndexOf(strTop, m_vNonTerminal) == true && m_mParseTable[strTop][vToken.at(0)].compare("") != 0)
+        if (IndexOf(strTop, m_vNonTerminal) == true)
         {
-            printf("%-15s%-15s%-30s", strStack, )
+            if (m_mParseTable[strTop][vToken.at(0)].compare("") == 0)
+            {
+                return false;
+            }
+
+            strAction += "expand by " + m_mParseTable[strTop][vToken.at(0)];
+            printf("%-30s%-30s%-30s\n", strStack.data(), strVector.data(), strAction.data());
+            sStack.pop();
+
+            if (ParserProduction(m_mParseTable[strTop][vToken.at(0)], strLeft, vList) == false)
+            {
+                return false;
+            }
+
+            if (vList.size() == 0)
+            {
+                return false;
+            }
+            else if (vList.size() == 1)
+            {
+                if (vList.at(0).compare("ε") != 0)
+                {
+                    sStack.push(vList.at(0));
+                }
+            }
+            else
+            {
+                for (int i = vList.size() - 1; i >= 0; i--)
+                {
+                    if (vList.at(0).compare("ε") != 0)
+                    {
+                        sStack.push(vList.at(i));
+                    }
+                }
+            }
         }
     }
+
+    return false;
 }
 
 bool CParser::StackToString(stack<string> sStack, string &strStack)
@@ -225,6 +268,18 @@ bool CParser::StackToString(stack<string> sStack, string &strStack)
     {
         strStack.append(sStack.top() + " ");
         sStack.pop();
+    }
+
+    return true;
+}
+
+bool CParser::VectorToString(vector<string> vList, string &strList)
+{
+
+    strList.clear();
+    for (int i = 0; i < vList.size(); i++)
+    {
+        strList.append(vList.at(i) + " ");
     }
 
     return true;
