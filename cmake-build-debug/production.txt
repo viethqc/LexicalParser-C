@@ -1,6 +1,4 @@
-start    E
-E : T E';
-E' : + T E' | ε;
-T : F T';
-T' : * F T' | ε;
+start E   
+E : E + T | T;
+T : T * F | F;
 F : ( E ) | id;

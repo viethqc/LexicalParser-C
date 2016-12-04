@@ -4,6 +4,7 @@
 
 int main() {
     CParser a;
+    a.CheckGrammar("id + id * id");
 
     return 0;
 }

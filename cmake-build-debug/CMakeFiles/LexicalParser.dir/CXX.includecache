@@ -6,6 +6,8 @@
 
 #IncludeRegexTransform: 
 
+/media/viethqc/Setting/Github/C/LexicalParser/GlobalConst.h
+
 /media/viethqc/Setting/Github/C/LexicalParser/Parser.cpp
 Parser.h
 /media/viethqc/Setting/Github/C/LexicalParser/Parser.h
@@ -22,6 +24,10 @@ string
 sstream
 -
 unordered_map
+-
+GlobalConst.h
+/media/viethqc/Setting/Github/C/LexicalParser/GlobalConst.h
+stack
 -
 
 /media/viethqc/Setting/Github/C/LexicalParser/main.cpp

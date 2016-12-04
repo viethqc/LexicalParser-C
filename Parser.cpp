@@ -21,23 +21,275 @@ CParser::CParser()
     PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
-    AnalyzeProduction(m_vListProduction, m_vTerminal, m_vNonTerminal);
-
-    vector<string> vRight;
-    GetRight(m_vListProduction, "S", vRight);
-
-    cout << "Tap First :" << endl;
-    unordered_map<string, vector<string>> mFirstSet;
-    GetFirstSetNew(m_vListProduction, m_vTerminal, m_vNonTerminal, mFirstSet);
-    PrintUnorderedmap(mFirstSet);
+    if (AnalyzeProduction(m_vListProduction, m_vTerminal, m_vNonTerminal) == false)
+    {
+        return;
+    }
+    cout << "Tap ky hieu ket thuc :" << endl;
+    PrintProduction(m_vTerminal);
     cout << "=============================" << endl;
 
+    cout << "Tap ky hieu chua ket thuc :" << endl;
+    PrintProduction(m_vNonTerminal);
+    cout << "=============================" << endl;
+
+    if (PreConstructParseTable(m_vListProduction, m_strStart, m_vTerminal, m_vNonTerminal, m_mFirstSet, m_mFollowSet) == false)
+    {
+        return;
+    }
+    cout << "Tap First :" << endl;
+    PrintUnorderedmap(m_mFirstSet);
+    cout << "=============================" << endl;
+    cout << "Tap Follow :" << endl;
+    PrintUnorderedmap(m_mFollowSet);
+    cout << "=============================" << endl;
+
+    if (ConstructParseTable() == false)
+    {
+        return;
+    }
     int a = 0;
 }
 
 CParser::~CParser()
 {
 
+}
+
+bool CParser::ConstructParseTable()
+{
+    vector<string> vListPro;
+    vector<string> vProductionExtract;
+    vector<string> vRight;
+    vector<string> vFirstSet;
+    vector<string> vFollowSet;
+
+    string strLeft;
+
+    if (m_mFirstSet.size() == 0)
+    {
+        return false;
+    }
+
+    if (m_mFollowSet.size() == 0)
+    {
+        return false;
+    }
+
+    if (m_mFirstSet.size() == 0)
+    {
+        return false;
+    }
+
+    if (m_strStart.empty())
+    {
+        return false;
+    }
+
+    if (m_vTerminal.size() == 0)
+    {
+        return false;
+    }
+
+    if (m_vNonTerminal.size() == 0)
+    {
+        return false;
+    }
+
+    m_mParseTable.clear();
+    for (int i = 0; i < m_vListProduction.size(); i++)
+    {
+        if (SplitProToPro(m_vListProduction.at(i), vListPro) == false)
+        {
+            return false;
+        }
+
+        for (int j = 0; j < vListPro.size(); j++)
+        {
+            vProductionExtract.push_back(vListPro.at(j));
+        }
+    }
+
+    for (int i = 0; i < vProductionExtract.size(); i++)
+    {
+        vFirstSet.clear();
+        strLeft.clear();
+        vRight.clear();
+
+        if (ParserProduction(vProductionExtract.at(i), strLeft, vRight) == false)
+        {
+            return false;
+        }
+
+        //Tim tap first cua ve phai
+        if (GetFirstSetInList(vRight, m_mFirstSet, m_vTerminal, vFirstSet) == false)
+        {
+            return false;
+        }
+
+        for (int j = 0; j < vFirstSet.size(); j++)
+        {
+            if (vFirstSet.at(j).compare("ε") == 0)
+            {
+                continue;
+            }
+
+            m_mParseTable[strLeft][vFirstSet.at(j)] = vProductionExtract.at(i);
+        }
+
+        if (IndexOf("ε", vFirstSet) == true)
+        {
+            vFollowSet = m_mFollowSet[strLeft];
+            for (int j = 0; j < vFollowSet.size(); j++)
+            {
+                m_mParseTable[strLeft][vFollowSet.at(j)] = vProductionExtract.at(i);
+            }
+        }
+    }
+
+    PrintParseTable(m_vTerminal, m_vNonTerminal, m_mParseTable);
+
+    return true;
+}
+
+bool CParser::CheckGrammar(string strToken)
+{
+    vector<string> vToken;
+    stack<string> sStack;
+    string strTop;
+    string strStack;
+    int i = 0;
+    bool bResult = false;
+
+    cout << "===================================";
+    cout << "PHAN TICH CU PHAP" << endl;
+
+    if (strToken.empty())
+    {
+        return false;
+    }
+
+    //Chuan hoa xau dau vao
+    split(strToken, ' ', vToken);
+    i = 0;
+    while (i < vToken.size())
+    {
+        if (vToken.at(i).compare("") == 0)
+        {
+            vToken.erase(vToken.begin() + i);
+            continue;
+        }
+
+        i++;
+    }
+    vToken.push_back("$");
+
+    cout << "Input : ";
+    for (int i = 0; i < vToken.size(); i++)
+    {
+        cout << vToken.at(i) << " ";
+    }
+
+    //Phan tich cu phap
+    sStack.push("$");
+    sStack.push(m_strStart);
+
+    printf("%-15s%-15s%-30s", "Stack", "Input", "Action");
+    while (sStack.empty() == false && vToken.size() != 0)
+    {
+        StackToString(sStack, strStack);
+        strTop = sStack.top();
+        if (strTop.compare("$") == 0 && vToken.at(0).compare("$") == 0)
+        {
+            return true;
+        }
+
+        if (strTop.compare(vToken.at(0)) == 0 && strTop.compare("$") != 0)
+        {
+            sStack.pop();
+            vToken.erase(vToken.begin());
+            continue;
+        }
+
+        if (IndexOf(strTop, m_vNonTerminal) == true && m_mParseTable[strTop][vToken.at(0)].compare("") != 0)
+        {
+            printf("%-15s%-15s%-30s", strStack, )
+        }
+    }
+}
+
+bool CParser::StackToString(stack<string> sStack, string &strStack)
+{
+    strStack.clear();
+    while (sStack.empty() == false)
+    {
+        strStack.append(sStack.top() + " ");
+        sStack.pop();
+    }
+
+    return true;
+}
+
+void CParser::PrintParseTable(vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, unordered_map<string, string>> mParseTable)
+{
+    vector<string> vList;
+
+    for (int i = 0; i < vTerminal.size(); i++)
+    {
+        if (vTerminal.at(i).compare("ε") == 0)
+        {
+            continue;
+        }
+        vList.push_back(vTerminal.at(i));
+    }
+    vList.push_back("$");
+
+    printf("%-15s", "");
+    for (int i = 0; i < vList.size(); i++)
+    {
+        printf("%-15s", vList.at(i).data());
+    }
+    cout << endl;
+
+    for (int i = 0; i < vNonTerminal.size(); i++)
+    {
+        printf("%-15s", vNonTerminal.at(i).data());
+        for (int j = 0; j < vList.size(); j++)
+        {
+            printf("%-15s", mParseTable[vNonTerminal.at(i)][vList.at(j)].data());
+        }
+        cout << endl;
+    }
+}
+
+bool CParser::PreConstructParseTable(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet, unordered_map<string, vector<string>> &mFollowSet)
+{
+    if (vProduction.size() == 0)
+    {
+        return false;
+    }
+
+    if (vTerminal.size() == 0)
+    {
+        return false;
+    }
+
+    if (vNonTerminal.size() == 0)
+    {
+        return false;
+    }
+
+    if (GetFirstSetNew(vProduction, vTerminal, vNonTerminal, mFirstSet) == false)
+    {
+        return false;
+    }
+
+    if (GetFollowSet(vProduction, strStart, vTerminal, vNonTerminal, mFirstSet, mFollowSet) == false)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void CParser::PrintProduction(vector<string> vProduction)
@@ -199,8 +451,11 @@ bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTermina
             vProductionExtract.push_back(vListPro.at(j));
         }
     }
+
+#ifdef _DEBUG
     cout << "Luat sinh mo rong : " << endl;
     PrintProduction(vProductionExtract);
+#endif
 
     //Duyet tung luat sinh cho den khi tap first khong co su thay doi thi dung lai
     do
@@ -215,7 +470,9 @@ bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTermina
             //Vd :  S->a b thi tach thanh
             //      strLeft : S     (string)
             //      vRight : a, b;  (vector)
+#ifdef _DEBUG
             cout << "Xet luat sinh : " << vProductionExtract.at(i) << endl;
+#endif
             if (ParserProduction(vProductionExtract.at(i), strLeft, vRight) == false)
             {
                 return false;
@@ -288,6 +545,233 @@ bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTermina
     return true;
 }
 
+bool CParser::GetFollowSet(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> mFirstSet, unordered_map<string, vector<string>> &mFollowSet)
+{
+    vector<string> vProductionExtract;
+    vector<string> vListPro;
+    vector<string> vRight;
+    vector<string> vRightBeta;
+    vector<string> vFirstSet;
+
+    string strBeta;
+
+    bool bHasChange = false;
+
+    string strLeft;
+
+#ifdef _DEBUG
+    cout << "======================" << endl;
+    cout << "Start find follow set" << endl;
+#endif
+
+    if (vProduction.size() == 0)
+    {
+        return false;
+    }
+
+    if (strStart.empty())
+    {
+        return false;
+    }
+
+    if (vTerminal.empty())
+    {
+        return false;
+    }
+
+    if (vNonTerminal.empty())
+    {
+        return false;
+    }
+
+    if (mFirstSet.size() == 0)
+    {
+        return false;
+    }
+
+    //Them $ vao tap follow cua ky tu bat dau
+    InserMap(strStart, "$", mFollowSet);
+
+    //Tach luat sinh thanh cac luat sinh don
+    //VD : S -> a | b thi tach thanh S-> a va S->b;
+    for (int i = 0; i < vProduction.size(); i++)
+    {
+        if (SplitProToPro(vProduction.at(i), vListPro) == false)
+        {
+            return false;
+        }
+
+        for (int j = 0; j < vListPro.size(); j++)
+        {
+            vProductionExtract.push_back(vListPro.at(j));
+        }
+    }
+#ifdef _DEBUG
+    cout << "Luat sinh mo rong : " << endl;
+    PrintProduction(vProductionExtract);
+#endif
+
+    do
+    {
+        bHasChange = false;
+        //Duyet qua tung luat sinh, ap dung luat first de them vao tap follow
+        for (int i = 0; i < vProductionExtract.size(); i++)
+        {
+            if (ParserProduction(vProductionExtract.at(i), strLeft, vRight) == false)
+            {
+                return false;
+            }
+
+            for (int j = 0; j < vRight.size(); j++)
+            {
+                strBeta.clear();
+                vRightBeta.clear();
+
+                strBeta = vRight.at(j);
+                if (IndexOf(strBeta, vTerminal) == true)  //Bo qua khong xet cac ky tu ket thuc
+                {
+                    continue;
+                }
+                vRightBeta.insert(vRightBeta.begin(), vRight.begin() + j + 1, vRight.end());
+
+                GetFirstSetInList(vRightBeta, mFirstSet, vTerminal, vFirstSet);
+
+                //Ap dung luat 3
+                if (vFirstSet.size() == 0)
+                {
+                    auto object = mFollowSet.find(strLeft);
+                    if (object == mFollowSet.end())
+                    {
+                        continue;
+                    }
+
+                    for (int k = 0; k < object->second.size(); k++)
+                    {
+                        if (InserMap(strBeta, object->second.at(k), mFollowSet) == true)
+                        {
+                            bHasChange = true;
+                        }
+                    }
+                }
+                else
+                {
+                    //Ap dung luat 2
+                    for (int k = 0; k < vFirstSet.size(); k++)
+                    {
+                        if (vFirstSet.at(k).compare("ε") == 0) {
+                            continue;
+                        }
+
+                        if (InserMap(strBeta, vFirstSet.at(k), mFollowSet) == true)
+                        {
+                            bHasChange = true;
+                        }
+                    }
+
+                    //Ap dung luat 4
+                    if (IndexOf("ε", vFirstSet) == true)
+                    {
+                        auto object = mFollowSet.find(strLeft);
+                        if (object == mFollowSet.end())
+                        {
+                            continue;
+                        }
+                        for (int k = 0; k < object->second.size(); k++)
+                        {
+                            if (InserMap(strBeta, object->second.at(k), mFollowSet) == true)
+                            {
+                                bHasChange = true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }while (bHasChange == true);
+
+#ifdef _DEBUG
+    cout << endl << "Tap follow" << endl;
+    PrintUnorderedmap(mFollowSet);
+#endif
+
+    return true;
+}
+
+/**
+ * Tim tap first cua 1 tap cho truoc
+ * @param vList
+ * @param mFirstSet
+ * @param vListResult
+ * @return
+ */
+bool CParser::GetFirstSetInList(vector<string> vList, unordered_map<string, vector<string>> mFirstSet, vector<string> vTerminal, vector<string> &vListResult)
+{
+    int i = 0;
+
+    vListResult.clear();
+    if (vList.size() == 0)
+    {
+        return true;
+    }
+
+    if (mFirstSet.size() == 0)
+    {
+        return false;
+    }
+
+    i = 0;
+    for (i = 0; i < vList.size(); i++)
+    {
+        if (IndexOf(vList.at(i), vTerminal) == true)
+        {
+            vListResult.push_back(vList.at(i));
+            break;
+        }
+
+        auto object = mFirstSet.find(vList.at(i));
+        if (object == mFirstSet.end())
+        {
+            return false;
+        }
+
+        for (int j = 0; j < object->second.size(); j++)
+        {
+            if (IndexOf(object->second.at(j), vListResult) == true)
+            {
+                continue;
+            }
+
+            //Bo qua khong them ε
+            if (object->second.at(j).compare("ε") == 0)
+            {
+                continue;
+            }
+
+            vListResult.push_back(object->second.at(j));
+        }
+
+        //Duyet cho den khi tim thay tap first nao khong co ky tu ε
+        if (IndexOf("ε", object->second) == false)
+        {
+            break;
+        }
+    }
+
+    //Neu tat ca cac tap first cua cac phan tu deu chua ε thi them ε vao tap first can tim
+    if (i == vList.size())
+    {
+        vListResult.push_back("ε");
+    }
+
+    return true;
+}
+
+/**
+ * Lay danh sach tu key dau vao
+ * @param mMap
+ * @param strKey
+ * @return
+ */
 vector<string>* CParser::GetListInMap(unordered_map<string, vector<string>> &mMap, string strKey)
 {
     vector<string> *vListFirst;
@@ -307,6 +791,14 @@ vector<string>* CParser::GetListInMap(unordered_map<string, vector<string>> &mMa
     return &object->second;
 }
 
+/**
+ * Chen key , value vao map
+ * @param strKey        : key
+ * @param strValue      : value
+ * @param mMap          : map can chen
+ * @return              : true neu khong loi
+ *                      : false neu co loi
+ */
 bool CParser::InserMap(string strKey, string strValue, unordered_map<string, vector<string>> &mMap)
 {
     vector<string> *vList;

@@ -84,6 +84,9 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/GlobalConst.h">
+			<Option target="LexicalParser"/>
+		</Unit>
 		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/Parser.cpp">
 			<Option target="LexicalParser"/>
 		</Unit>

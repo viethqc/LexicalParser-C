@@ -11,6 +11,8 @@
 #include <string>
 #include <sstream>
 #include <unordered_map>
+#include "GlobalConst.h"
+#include <stack>
 
 using namespace std;
 
@@ -37,18 +39,31 @@ private:
     bool GetRight(vector<string> vProduction, string strLeft, vector<string> &vRight);
     bool GetFirstSet(vector<string> vProduction, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet);
     bool GetFirstSetNew(vector<string> vProduction, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet);
+    bool GetFollowSet(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> mFirstSet, unordered_map<string, vector<string>> &mFollowSet);
+    bool GetFirstSetInList(vector<string> vList, unordered_map<string, vector<string>> mFirstSet, vector<string> vTerminal, vector<string> &vListResult);
 
     void PrintProduction(vector<string> vProduction);
     void PrintUnorderedmap(unordered_map<string, vector<string>> umMap);
     bool IndexOf(string strToken, vector<string> vTerminal);
     bool InserMap(string strKey, string strValue, unordered_map<string, vector<string>> &mMap);
     vector<string> * GetListInMap(unordered_map<string, vector<string>> &mMap, string strKey);
+    bool PreConstructParseTable(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet, unordered_map<string, vector<string>> &mFollowSet);
+    bool ConstructParseTable();
+    void PrintParseTable(vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, unordered_map<string, string>> mParseTable);
+    bool StackToString(stack<string> sStack, string &strStack);
+
+public:
+    bool CheckGrammar(string strToken);
+
 
 private:
     string m_strStart;
     vector<string> m_vListProduction;
     vector<string> m_vTerminal;
     vector<string> m_vNonTerminal;
+    unordered_map<string, vector<string>> m_mFirstSet;
+    unordered_map<string, vector<string>> m_mFollowSet;
+    unordered_map<string, unordered_map<string, string>> m_mParseTable;
 };
 
 
