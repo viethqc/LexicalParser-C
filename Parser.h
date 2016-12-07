@@ -13,6 +13,8 @@
 #include <unordered_map>
 #include "GlobalConst.h"
 #include <stack>
+#include <map>
+#include "ReleaseEvent.h"
 
 using namespace std;
 
@@ -52,6 +54,9 @@ private:
     void PrintParseTable(vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, unordered_map<string, string>> mParseTable);
     bool StackToString(stack<string> sStack, string &strStack);
     bool VectorToString(vector<string> vList, string &strList);
+    bool DeleteFirstSymbol(string &strProduction);
+    bool LeftFactoring(vector<string> &vProduction);
+    bool LeftFactoringSinglePro(string strProduction, vector<string> &vNewPro);
 
 public:
     bool CheckGrammar(string strToken);

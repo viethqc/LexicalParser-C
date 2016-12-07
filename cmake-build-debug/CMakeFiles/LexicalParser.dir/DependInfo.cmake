@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "/media/viethqc/Setting/Github/C/LexicalParser/Parser.cpp" "/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/LexicalParser.dir/Parser.cpp.o"
+  "/media/viethqc/Setting/Github/C/LexicalParser/ReleaseEvent.cpp" "/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.o"
   "/media/viethqc/Setting/Github/C/LexicalParser/main.cpp" "/media/viethqc/Setting/Github/C/LexicalParser/cmake-build-debug/CMakeFiles/LexicalParser.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")

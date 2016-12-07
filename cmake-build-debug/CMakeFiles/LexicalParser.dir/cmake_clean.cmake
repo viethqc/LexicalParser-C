@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/LexicalParser.dir/main.cpp.o"
   "CMakeFiles/LexicalParser.dir/Parser.cpp.o"
+  "CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.o"
   "LexicalParser.pdb"
   "LexicalParser"
 )

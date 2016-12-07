@@ -93,6 +93,12 @@
 		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/Parser.h">
 			<Option target="LexicalParser"/>
 		</Unit>
+		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/ReleaseEvent.cpp">
+			<Option target="LexicalParser"/>
+		</Unit>
+		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/ReleaseEvent.h">
+			<Option target="LexicalParser"/>
+		</Unit>
 		<Unit filename="/media/viethqc/Setting/Github/C/LexicalParser/main.cpp">
 			<Option target="LexicalParser"/>
 		</Unit>

@@ -1,1 +1,1 @@
-/usr/bin/c++   -g   CMakeFiles/LexicalParser.dir/main.cpp.o CMakeFiles/LexicalParser.dir/Parser.cpp.o  -o LexicalParser 
+/usr/bin/c++   -g   CMakeFiles/LexicalParser.dir/main.cpp.o CMakeFiles/LexicalParser.dir/Parser.cpp.o CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.o  -o LexicalParser 

@@ -16,6 +16,11 @@ CParser::CParser()
     PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
+    cout << "Left Factoring :" << endl;
+    vector<string> vList;
+    LeftFactoringSinglePro(m_vListProduction.at(0), vList);
+    cout << "=============================" << endl;
+
     cout << "Luat sinh sau khi khu de quy trai :" << endl;
     AvoidLeftRecursion(m_vListProduction);
     PrintProduction(m_vListProduction);
@@ -211,8 +216,20 @@ bool CParser::CheckGrammar(string strToken)
             return true;
         }
 
+        if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vList.at(0)) != 0)
+        {
+            return false;
+        }
+
+//        if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vToken.at(0)) != 0)
+//        {
+//            return false;
+//        }
+
         if (strTop.compare(vToken.at(0)) == 0 && strTop.compare("$") != 0)
         {
+            strAction = "pop " + sStack.top() + " and ip++";
+            printf("%-30s%-30s%-30s\n", strStack.data(), strVector.data(), strAction.data());
             sStack.pop();
             vToken.erase(vToken.begin());
             continue;
@@ -1044,6 +1061,284 @@ bool CParser::AnalyzeProduction(vector<string> vListProduction, vector<string> &
     return true;
 }
 
+bool CParser::LeftFactoring(vector<string> &vProduction)
+{
+    string strLeft;
+    vector<string> vRight, *pvTmp;
+    map<string, vector<int> *> mMap;
+    map<int, vector<string> * > mMapIndex;
+    vector<string> vSymbol;
+    string strAddLeft;
+    string strAddRight;
+    string strNewRight;
+    string strAddPro;
+    string strNewPro;
+    string strTmp1, strTmp2;
+    bool bSame;
+    int iIndex;
+
+    if (vProduction.size() == 0)
+    {
+        return false;
+    }
+
+    try
+    {
+        for (int i = 0; i < vProduction.size(); i++)
+        {
+            if (SplitProduction(vProduction.at(i), strLeft, vRight) == false)
+            {
+                return false;
+            }
+
+            for (int j = 0; j < vRight.size(); j++)
+            {
+                split(vRight.at(j), ' ', vSymbol);
+                if (vSymbol.size() == 0)
+                {
+                    return false;
+                }
+                if (mMapIndex[j] == nullptr)
+                {
+                    mMapIndex[j] = new vector<string>;
+                }
+                for (int k = 0; k < vSymbol.size(); k++)
+                {
+                    mMapIndex[j]->push_back(vSymbol.at(k));
+                }
+
+                if (mMap[vSymbol[0]] == nullptr)
+                {
+                    mMap[vSymbol[0]] = new vector<int>();
+                }
+
+                mMap[vSymbol[0]]->push_back(j);
+            }
+
+            strNewRight = "";
+            strAddLeft = strLeft;
+            for (std::map<string, vector<int> *>::iterator it = mMap.begin(); it != mMap.end(); ++it)
+            {
+                strAddLeft.append("*");
+                //Tim phan tu chung trong 1 tap, vd ab, abc, abd thi can tim ab la phan tu chung
+                bSame = true;                                  //bien nhan dien phan tu chung
+                do
+                {
+                    bSame = true;
+                    //Duyet cac ky tu dau tien cua tap
+                    for (int j = 0; j < it->second->size() - 1; j++)
+                    {
+                        if (mMapIndex[it->second->at(j)]->size() == 0 || mMapIndex[it->second->at(j + 1)]->size() == 0)
+                        {
+                            bSame = false;
+                            break;
+                        }
+                        strTmp1 = mMapIndex[it->second->at(j)]->at(0);
+                        strTmp2 = mMapIndex[it->second->at(j + 1)]->at(0);
+                        if (strTmp1.compare(strTmp2) != 0)
+                        {
+                            bSame = false;
+                        }
+                    }
+
+                    //Neu cac ky tu dau tien cua tap deu giong nhau thi luu lai va xoa phan tu dau tien
+                    //de xet phan tu ke tiep
+                    if (bSame == true)
+                    {
+                        strNewRight += strTmp1;
+                        for (int j = 0; j < it->second->size(); j++)
+                        {
+                            pvTmp = mMapIndex[it->second->at(j)];
+                            pvTmp->erase(pvTmp->begin());
+                        }
+                    }
+                }
+                while (bSame == true);
+                strNewRight += strAddLeft;
+
+                //Them vao ve phai luat sinh moi
+                for (int j = 0; j < it->second->size(); j++)
+                {
+                    iIndex = it->second->at(j);
+                    if (mMapIndex[iIndex]->size() == 0)
+                    {
+                        strAddRight += "ε ";
+                    }
+                    else
+                    {
+                        for (int k = 0; k < mMapIndex[iIndex]->size(); k++)
+                        {
+                            strAddRight += mMapIndex[iIndex]->at(k) + " ";
+                        }
+                    }
+
+                    if (j != it->second->size() - 1)
+                    {
+                        strAddRight += " | ";
+                    }
+                }
+            }
+
+            strNewPro = strLeft + strNewRight;
+            strAddPro = strAddLeft + strAddRight;
+        }
+    } catch (CReleaseEvent e)
+    {
+        return e.GetReturn();
+    }
+}
+
+bool CParser::LeftFactoringSinglePro(string strProduction, vector<string> &vNewPro)
+{
+    string strLeft;
+    vector<string> vRight, *pvTmp;
+    map<string, vector<int> *> mMap;
+    map<int, vector<string> * > mMapIndex;
+    vector<string> vSymbol;
+    string strAddLeft;
+    string strAddRight;
+    string strNewRight;
+    string strAddPro;
+    string strNewPro;
+    string strTmp1, strTmp2;
+    bool bSame;
+    int iIndex;
+
+    vector<string> vAddPro;
+
+    if (strProduction.empty())
+    {
+        return false;
+    }
+
+    if (IsValidProduction(strProduction) == false)
+    {
+        return false;
+    }
+
+    if (SplitProduction(strProduction, strLeft, vRight) == false)
+    {
+        return false;
+    }
+
+    for (int j = 0; j < vRight.size(); j++)
+    {
+        split(vRight.at(j), ' ', vSymbol);
+        if (vSymbol.size() == 0)
+        {
+            return false;
+        }
+        if (mMapIndex[j] == nullptr)
+        {
+            mMapIndex[j] = new vector<string>;
+        }
+        for (int k = 0; k < vSymbol.size(); k++)
+        {
+            mMapIndex[j]->push_back(vSymbol.at(k));
+        }
+
+        if (mMap[vSymbol[0]] == nullptr)
+        {
+            mMap[vSymbol[0]] = new vector<int>();
+        }
+
+        mMap[vSymbol[0]]->push_back(j);
+    }
+
+    strNewRight = "";
+    strAddLeft = strLeft;
+    for (std::map<string, vector<int> *>::iterator it = mMap.begin(); it != mMap.end(); ++it)
+    {
+        //Neu chi co 1 phan tu thi
+        if (it->second->size() == 1)
+        {
+            strNewRight += " " + it->first;
+            if (next(it) != mMap.end())
+            {
+                strNewRight.append(" | ");
+            }
+
+            continue;
+        }
+
+        strAddLeft.append("*");
+        strAddRight.clear();
+        //Tim phan tu chung trong 1 tap, vd ab, abc, abd thi can tim ab la phan tu chung
+        bSame = true;                                  //bien nhan dien phan tu chung
+        do
+        {
+            bSame = true;
+            //Duyet cac ky tu dau tien cua tap
+            for (int j = 0; j < it->second->size() - 1; j++)
+            {
+                if (mMapIndex[it->second->at(j)]->size() == 0 || mMapIndex[it->second->at(j + 1)]->size() == 0)
+                {
+                    bSame = false;
+                    break;
+                }
+                strTmp1 = mMapIndex[it->second->at(j)]->at(0);
+                strTmp2 = mMapIndex[it->second->at(j + 1)]->at(0);
+                if (strTmp1.compare(strTmp2) != 0)
+                {
+                    bSame = false;
+                }
+            }
+
+            //Neu cac ky tu dau tien cua tap deu giong nhau thi luu lai va xoa phan tu dau tien
+            //de xet phan tu ke tiep
+            if (bSame == true)
+            {
+                strNewRight += strTmp1;
+                for (int j = 0; j < it->second->size(); j++)
+                {
+                    pvTmp = mMapIndex[it->second->at(j)];
+                    pvTmp->erase(pvTmp->begin());
+                }
+            }
+        }
+        while (bSame == true);
+
+        strNewRight += " " + strAddLeft;
+        if (next(it) != mMap.end())
+        {
+            strNewRight.append(" | ");
+        }
+
+        //Them vao ve phai luat sinh moi
+        for (int j = 0; j < it->second->size(); j++)
+        {
+            iIndex = it->second->at(j);
+            if (mMapIndex[iIndex]->size() == 0)
+            {
+                strAddRight += "ε ";
+            }
+            else
+            {
+                for (int k = 0; k < mMapIndex[iIndex]->size(); k++)
+                {
+                    strAddRight += mMapIndex[iIndex]->at(k) + " ";
+                }
+            }
+
+            if (j != it->second->size() - 1)
+            {
+                strAddRight += " | ";
+            }
+        }
+
+        strAddPro = strAddLeft + " : " + strAddRight;
+        vAddPro.push_back(strAddPro);
+    }
+
+    strNewPro = strLeft + " : " + strNewRight;
+
+    vNewPro.push_back(strNewPro);
+
+
+    return true;
+}
+
+
 /**
  *
  * @param szFileName : path to production file
@@ -1176,7 +1471,7 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
             }
             else
             {
-                ReplaceProduction(strTmpProduction, strLeft, "");
+                DeleteFirstSymbol(strTmpProduction);
                 strTmpProduction.append(" " + strAddLeft);
                 if(!strAddRight.empty())
                 {
@@ -1201,6 +1496,36 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
     for (int i = 0; i < vListProductionNew.size(); i++)
     {
         vListProduction.push_back(vListProductionNew.at(i));
+    }
+
+    return true;
+}
+
+bool CParser::DeleteFirstSymbol(string &strProduction)
+{
+    string strLeft;
+    vector<string> vList;
+
+    if (IsValidProduction(strProduction) == false)
+    {
+        return false;
+    }
+
+    if (ParserProduction(strProduction, strLeft, vList) == false)
+    {
+        return false;
+    }
+
+    if (vList.size() == 1)
+    {
+        return false;
+    }
+
+    strProduction = "";
+    strProduction.append(strLeft + " : ");
+    for (int i = 1; i < vList.size(); i++)
+    {
+        strProduction.append(vList.at(i) + " ");
     }
 
     return true;

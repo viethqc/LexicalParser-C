@@ -150,6 +150,33 @@ Parser.cpp.s:
 	$(MAKE) -f CMakeFiles/LexicalParser.dir/build.make CMakeFiles/LexicalParser.dir/Parser.cpp.s
 .PHONY : Parser.cpp.s
 
+ReleaseEvent.o: ReleaseEvent.cpp.o
+
+.PHONY : ReleaseEvent.o
+
+# target to build an object file
+ReleaseEvent.cpp.o:
+	$(MAKE) -f CMakeFiles/LexicalParser.dir/build.make CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.o
+.PHONY : ReleaseEvent.cpp.o
+
+ReleaseEvent.i: ReleaseEvent.cpp.i
+
+.PHONY : ReleaseEvent.i
+
+# target to preprocess a source file
+ReleaseEvent.cpp.i:
+	$(MAKE) -f CMakeFiles/LexicalParser.dir/build.make CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.i
+.PHONY : ReleaseEvent.cpp.i
+
+ReleaseEvent.s: ReleaseEvent.cpp.s
+
+.PHONY : ReleaseEvent.s
+
+# target to generate assembly for a file
+ReleaseEvent.cpp.s:
+	$(MAKE) -f CMakeFiles/LexicalParser.dir/build.make CMakeFiles/LexicalParser.dir/ReleaseEvent.cpp.s
+.PHONY : ReleaseEvent.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -189,6 +216,9 @@ help:
 	@echo "... Parser.o"
 	@echo "... Parser.i"
 	@echo "... Parser.s"
+	@echo "... ReleaseEvent.o"
+	@echo "... ReleaseEvent.i"
+	@echo "... ReleaseEvent.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
