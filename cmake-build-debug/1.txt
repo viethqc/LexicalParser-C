@@ -33,6 +33,33 @@ T : T * F | F;
 F : ( E ) | id;
 
 ===================
+start S
+
+S : E@
+E : T + E | T – E | T@
+T : F * T | F / T | F@
+F : num | id@
+=============
+
+
+start S
+S : S1 | S S1@
+S1 : S_FOR | stmt@
+S_FOR : for ( define ; conds ; assign ) block@
+block : { stmtlst }@
+stmtlst : stmtlst stmt | stmt@
+stmt : define | assign@
+define : var assign@
+conds : id compare val@
+compare : < | <= | > | >= | == | !=@
+assign : id = val | id ++ | id --@
+val : val + val1 | val - val1 | val1@
+val1 : val1 * val2 | val1 / val2 | val2@
+val2 : ( val ) | id | num | true | false@
+
+
+=====================================================
+
 start S   
 S : S1 S | S1;
 S1 : S_W | S_DW | statement;

@@ -16,14 +16,14 @@ CParser::CParser()
     PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
-    cout << "Left Factoring :" << endl;
-    vector<string> vList;
-    LeftFactoring(m_vListProduction);
+    cout << "Luat sinh sau khi khu de quy trai :" << endl;
+    AvoidLeftRecursion(m_vListProduction);
     PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
-    cout << "Luat sinh sau khi khu de quy trai :" << endl;
-    AvoidLeftRecursion(m_vListProduction);
+    cout << "Left Factoring :" << endl;
+    vector<string> vList;
+    LeftFactoring(m_vListProduction);
     PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
@@ -215,6 +215,14 @@ bool CParser::CheckGrammar(string strToken)
         return false;
     }
 
+    int iPos = strToken.find("$");
+    if (iPos == -1)
+    {
+        return false;
+    }
+
+    strToken = strToken.substr(0, iPos);
+
     //Chuan hoa xau dau vao
     split(strToken, ' ', vToken);
     i = 0;
@@ -241,7 +249,7 @@ bool CParser::CheckGrammar(string strToken)
     sStack.push("$");
     sStack.push(m_strStart);
 
-    printf("%-30s%-30s%-30s\n", "Stack", "Input", "Action");
+    printf("%-100s%-100s%-100s\n", "Stack", "Input", "Action");
     while (sStack.empty() == false && vToken.size() != 0)
     {
         StackToString(sStack, strStack);
@@ -252,21 +260,20 @@ bool CParser::CheckGrammar(string strToken)
         {
             return true;
         }
+        else if (strTop.compare("$") == 0 && vToken.at(0).compare("$") != 0)
+        {
+            return false;
+        }
 
         if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vToken.at(0)) != 0)
         {
             return false;
         }
 
-//        if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vToken.at(0)) != 0)
-//        {
-//            return false;
-//        }
-
         if (strTop.compare(vToken.at(0)) == 0 && strTop.compare("$") != 0)
         {
             strAction = "pop " + sStack.top() + " and ip++";
-            printf("%-30s%-30s%-30s\n", strStack.data(), strVector.data(), strAction.data());
+            printf("%-100s%-100s%-100s\n", strStack.data(), strVector.data(), strAction.data());
             sStack.pop();
             vToken.erase(vToken.begin());
             continue;
@@ -276,11 +283,12 @@ bool CParser::CheckGrammar(string strToken)
         {
             if (m_mParseTable[strTop][vToken.at(0)].compare("") == 0)
             {
+                cout << "Khong ton tai M[" + strTop + ", " +  vToken.at(0) + "]" << endl;
                 return false;
             }
 
             strAction += "expand by " + m_mParseTable[strTop][vToken.at(0)];
-            printf("%-30s%-30s%-30s\n", strStack.data(), strVector.data(), strAction.data());
+            printf("%-100s%-100s%-100s\n", strStack.data(), strVector.data(), strAction.data());
             sStack.pop();
 
             if (ParserProduction(m_mParseTable[strTop][vToken.at(0)], strLeft, vList) == false)
@@ -1073,6 +1081,8 @@ bool CParser::LeftFactoring(vector<string> &vProduction)
     string strTop;
     vector<string> vNewPro;
 
+    cout << "==================================Loai bo yeu to trai================================" << endl;
+
     if (vProduction.size() == 0)
     {
         return false;
@@ -1090,6 +1100,7 @@ bool CParser::LeftFactoring(vector<string> &vProduction)
         strTop = sStack.top();
         sStack.pop();
         vNewPro.clear();
+        cout << "Xet luat sinh : " << strTop << endl;
         if (LeftFactoringSinglePro(strTop, vNewPro) == false)
         {
             return false;
@@ -1099,10 +1110,19 @@ bool CParser::LeftFactoring(vector<string> &vProduction)
 
         if (vNewPro.size() > 1)
         {
+            cout << "Luat sinh co yeu to trai" << endl;
+            cout << "Cac luat sinh moi duoc tao ra la : " << vNewPro.at(0) << endl;
+
             for (int i = 1; i < vNewPro.size(); i++)
             {
+                cout << "                                 : " << vNewPro.at(i) << endl;
                 sStack.push(vNewPro.at(i));
             }
+            cout << endl;
+        }
+        else if (vNewPro.size() == 1)
+        {
+            cout << "Luat khong co yeu to trai, xet luat sinh khac" << endl << endl;
         }
     }
 
@@ -1358,22 +1378,30 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
 
     vector<string> vList;
 
+    cout << "===================Khu de quy trai===================" << endl;
+
     vListProductionNew.clear();
+    //Duyet qua tung luat sinh
     for (int i = 0; i < vListProduction.size(); i++)
     {
         strTmp = vListProduction.at(i);
+        cout << "Xet luat sinh : " << strTmp << endl;
         for (int j = 0; j < i; j++)
-        {
+        {   //Thay the tung luat sinh o tren vao luat sinh dang xet
             ReplaceProByPro(vListProduction.at(j), strTmp);
         }
+        cout << "Thay tap luat sinh ben tren vao luat sinh hien tai ta duoc luat sinh moi : " << strTmp << endl;
 
-        //Neu luat sinh dang xet khong phai de quy => luu lai, khong xu ly
+        //Neu luat sinh dang xet khong phai de quy => luu lai, khong xu ly, xet luat sinh tiep theo
         if (!DetectLeftRecursion(strTmp))
         {
+            cout << "Luat sinh moi khong de quy trai, bo qua" << endl;
+            cout << endl;
             vListProductionNew.push_back(vListProduction.at(i));
             continue;
         }
 
+        cout << "Luat sinh moi de quy, tien hanh khu de quy : " << strTmp << endl;
         if (SplitProduction(strTmp, strLeft, vListRight) == false)
         {
             continue;
@@ -1393,6 +1421,11 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
                     strNewRight += " | ";
                 }
 
+                StandardString(vListRight.at(j));
+                if (vListRight.at(j).compare("ε") == 0)
+                {
+                    vListRight.at(j).clear();
+                }
                 strNewRight += vListRight.at(j) + " " + strAddLeft;
             }
             else
@@ -1421,6 +1454,10 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
 
         vListProductionNew.push_back(strNewProduction);
         vListProductionNew.push_back(strAddedProduction);
+
+        cout << "Tap luat sinh sau khi khu de quy : " << strNewProduction << endl;
+        cout << "                                 : " << strAddedProduction << endl;
+        cout << endl;
     }
 
     vListProduction.clear();
@@ -1429,6 +1466,7 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
         vListProduction.push_back(vListProductionNew.at(i));
     }
 
+    cout << "Khu de quy trai xong" << endl;
     return true;
 }
 

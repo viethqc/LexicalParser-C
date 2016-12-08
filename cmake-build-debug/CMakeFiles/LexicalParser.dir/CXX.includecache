@@ -49,4 +49,10 @@ stdio.h
 -
 Parser.h
 /media/viethqc/Setting/Github/C/LexicalParser/Parser.h
+string
+-
+fstream
+-
+streambuf
+-
 
