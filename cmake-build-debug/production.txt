@@ -1,2 +1,2 @@
-start S   
-S : a | a b | a b c d | a b c d e | f;
+start ex
+ex : ex + ex | ex - ex | ex * ex | ex / ex | ex % ex;

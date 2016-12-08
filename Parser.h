@@ -57,7 +57,7 @@ private:
     bool DeleteFirstSymbol(string &strProduction);
     bool LeftFactoring(vector<string> &vProduction);
     bool LeftFactoringSinglePro(string strProduction, vector<string> &vNewPro);
-
+    bool StandardString(string &strString);
 public:
     bool CheckGrammar(string strToken);
 

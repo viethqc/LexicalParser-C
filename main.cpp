@@ -4,7 +4,7 @@
 
 int main() {
     CParser a;
-    if (a.CheckGrammar("ID + ID") == true)
+    if (a.CheckGrammar("id + id") == true)
     {
         printf("Van pham hop le\n");
     }

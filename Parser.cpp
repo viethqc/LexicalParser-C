@@ -18,7 +18,8 @@ CParser::CParser()
 
     cout << "Left Factoring :" << endl;
     vector<string> vList;
-    LeftFactoringSinglePro(m_vListProduction.at(0), vList);
+    LeftFactoring(m_vListProduction);
+    PrintProduction(m_vListProduction);
     cout << "=============================" << endl;
 
     cout << "Luat sinh sau khi khu de quy trai :" << endl;
@@ -171,7 +172,38 @@ bool CParser::CheckGrammar(string strToken)
     bool bResult = false;
 
     cout << "===================================";
-    cout << "PHAN TICH CU PHAP" << endl;
+    cout << "PHAN TICH CU PHAP";
+    cout << "===================================" << endl;
+
+    if (m_vNonTerminal.empty())
+    {
+        cout << "Tap ky tu chua ket thuc rong" << endl;
+        return false;
+    }
+
+    if (m_vTerminal.empty())
+    {
+        cout << "Tap ky tu ket thuc rong" << endl;
+        return false;
+    }
+
+    if (m_mFollowSet.empty())
+    {
+        cout << "Tap follow rong" << endl;
+        return false;
+    }
+
+    if (m_mFirstSet.empty())
+    {
+        cout << "Tap first rong" << endl;
+        return false;
+    }
+
+    if (m_mParseTable.empty())
+    {
+        cout << "Bang phan tich cu phap rong" << endl;
+        return false;
+    }
 
     if (strToken.empty())
     {
@@ -216,7 +248,7 @@ bool CParser::CheckGrammar(string strToken)
             return true;
         }
 
-        if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vList.at(0)) != 0)
+        if (IndexOf(strTop, m_vTerminal) == true && strTop.compare(vToken.at(0)) != 0)
         {
             return false;
         }
@@ -545,6 +577,11 @@ bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTermina
 #ifdef _DEBUG
             cout << "Xet luat sinh : " << vProductionExtract.at(i) << endl;
 #endif
+            if (IsValidProduction(vProductionExtract.at(i)) == false)
+            {
+                return false;
+            }
+
             if (ParserProduction(vProductionExtract.at(i), strLeft, vRight) == false)
             {
                 return false;
@@ -1063,129 +1100,44 @@ bool CParser::AnalyzeProduction(vector<string> vListProduction, vector<string> &
 
 bool CParser::LeftFactoring(vector<string> &vProduction)
 {
-    string strLeft;
-    vector<string> vRight, *pvTmp;
-    map<string, vector<int> *> mMap;
-    map<int, vector<string> * > mMapIndex;
-    vector<string> vSymbol;
-    string strAddLeft;
-    string strAddRight;
-    string strNewRight;
-    string strAddPro;
-    string strNewPro;
-    string strTmp1, strTmp2;
-    bool bSame;
-    int iIndex;
+    stack<string> sStack;
+    string strTop;
+    vector<string> vNewPro;
 
     if (vProduction.size() == 0)
     {
         return false;
     }
 
-    try
+    for (int i = vProduction.size() - 1; i >= 0; i--)
     {
-        for (int i = 0; i < vProduction.size(); i++)
-        {
-            if (SplitProduction(vProduction.at(i), strLeft, vRight) == false)
-            {
-                return false;
-            }
-
-            for (int j = 0; j < vRight.size(); j++)
-            {
-                split(vRight.at(j), ' ', vSymbol);
-                if (vSymbol.size() == 0)
-                {
-                    return false;
-                }
-                if (mMapIndex[j] == nullptr)
-                {
-                    mMapIndex[j] = new vector<string>;
-                }
-                for (int k = 0; k < vSymbol.size(); k++)
-                {
-                    mMapIndex[j]->push_back(vSymbol.at(k));
-                }
-
-                if (mMap[vSymbol[0]] == nullptr)
-                {
-                    mMap[vSymbol[0]] = new vector<int>();
-                }
-
-                mMap[vSymbol[0]]->push_back(j);
-            }
-
-            strNewRight = "";
-            strAddLeft = strLeft;
-            for (std::map<string, vector<int> *>::iterator it = mMap.begin(); it != mMap.end(); ++it)
-            {
-                strAddLeft.append("*");
-                //Tim phan tu chung trong 1 tap, vd ab, abc, abd thi can tim ab la phan tu chung
-                bSame = true;                                  //bien nhan dien phan tu chung
-                do
-                {
-                    bSame = true;
-                    //Duyet cac ky tu dau tien cua tap
-                    for (int j = 0; j < it->second->size() - 1; j++)
-                    {
-                        if (mMapIndex[it->second->at(j)]->size() == 0 || mMapIndex[it->second->at(j + 1)]->size() == 0)
-                        {
-                            bSame = false;
-                            break;
-                        }
-                        strTmp1 = mMapIndex[it->second->at(j)]->at(0);
-                        strTmp2 = mMapIndex[it->second->at(j + 1)]->at(0);
-                        if (strTmp1.compare(strTmp2) != 0)
-                        {
-                            bSame = false;
-                        }
-                    }
-
-                    //Neu cac ky tu dau tien cua tap deu giong nhau thi luu lai va xoa phan tu dau tien
-                    //de xet phan tu ke tiep
-                    if (bSame == true)
-                    {
-                        strNewRight += strTmp1;
-                        for (int j = 0; j < it->second->size(); j++)
-                        {
-                            pvTmp = mMapIndex[it->second->at(j)];
-                            pvTmp->erase(pvTmp->begin());
-                        }
-                    }
-                }
-                while (bSame == true);
-                strNewRight += strAddLeft;
-
-                //Them vao ve phai luat sinh moi
-                for (int j = 0; j < it->second->size(); j++)
-                {
-                    iIndex = it->second->at(j);
-                    if (mMapIndex[iIndex]->size() == 0)
-                    {
-                        strAddRight += "ε ";
-                    }
-                    else
-                    {
-                        for (int k = 0; k < mMapIndex[iIndex]->size(); k++)
-                        {
-                            strAddRight += mMapIndex[iIndex]->at(k) + " ";
-                        }
-                    }
-
-                    if (j != it->second->size() - 1)
-                    {
-                        strAddRight += " | ";
-                    }
-                }
-            }
-
-            strNewPro = strLeft + strNewRight;
-            strAddPro = strAddLeft + strAddRight;
-        }
-    } catch (CReleaseEvent e)
-    {
-        return e.GetReturn();
+        sStack.push(vProduction.at(i));
     }
+
+    vProduction.clear();
+
+    while (sStack.size() != 0)
+    {
+        strTop = sStack.top();
+        sStack.pop();
+        vNewPro.clear();
+        if (LeftFactoringSinglePro(strTop, vNewPro) == false)
+        {
+            return false;
+        }
+
+        vProduction.push_back(vNewPro.at(0));
+
+        if (vNewPro.size() > 1)
+        {
+            for (int i = 1; i < vNewPro.size(); i++)
+            {
+                sStack.push(vNewPro.at(i));
+            }
+        }
+    }
+
+    return true;
 }
 
 bool CParser::LeftFactoringSinglePro(string strProduction, vector<string> &vNewPro)
@@ -1252,7 +1204,10 @@ bool CParser::LeftFactoringSinglePro(string strProduction, vector<string> &vNewP
         //Neu chi co 1 phan tu thi
         if (it->second->size() == 1)
         {
-            strNewRight += " " + it->first;
+            for (int j = 0; j < mMapIndex[it->second->at(0)]->size(); j++)
+            {
+                strNewRight += " " + mMapIndex[it->second->at(0)]->at(j);
+            }
             if (next(it) != mMap.end())
             {
                 strNewRight.append(" | ");
@@ -1288,7 +1243,7 @@ bool CParser::LeftFactoringSinglePro(string strProduction, vector<string> &vNewP
             //de xet phan tu ke tiep
             if (bSame == true)
             {
-                strNewRight += strTmp1;
+                strNewRight += " " + strTmp1;
                 for (int j = 0; j < it->second->size(); j++)
                 {
                     pvTmp = mMapIndex[it->second->at(j)];
@@ -1333,7 +1288,10 @@ bool CParser::LeftFactoringSinglePro(string strProduction, vector<string> &vNewP
     strNewPro = strLeft + " : " + strNewRight;
 
     vNewPro.push_back(strNewPro);
-
+    for (int i = 0; i < vAddPro.size(); i++)
+    {
+        vNewPro.push_back(vAddPro.at(i));
+    }
 
     return true;
 }
@@ -1870,13 +1828,42 @@ bool CParser::SplitProduction(string strProduction, string &strLeft, vector<stri
  */
 bool CParser::IsValidProduction(string strProduction)
 {
+    vector<string> vList;
     if (strProduction.empty()) {
         return false;
     }
 
-    if (split(strProduction, ':').size() != 2)
+    split(strProduction, ':', vList);
+    if (vList.size() != 2)
     {
         return false;
+    }
+
+    StandardString(vList.at(0));
+    if (vList.at(0).compare("") == 0)
+    {
+        return false;
+    }
+
+    StandardString(vList.at(1));
+    if (vList.at(1).compare("") == 0)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool CParser::StandardString(string &strString)
+{
+    while (strString.empty() == false && strString[0] == ' ')
+    {
+        strString.erase(strString.begin());
+    }
+
+    while (strString.empty() == false && strString.back() == ' ')
+    {
+        strString.erase(strString.begin() + strString.length() - 1);
     }
 
     return true;
