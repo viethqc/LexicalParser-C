@@ -1,2 +1,6 @@
-start ex
-ex : ex + ex | ex - ex | ex * ex | ex / ex | ex % ex;
+start Goal
+
+Goal : Expr@
+Expr : Term + Expr | Term – Expr |Term@
+Term : Factor * Term | Factor / Term | Factor@
+Factor : num | id@

@@ -62,6 +62,11 @@ CParser::~CParser()
 
 }
 
+
+/**
+ * Xay dung bang phan tich
+ * @return
+ */
 bool CParser::ConstructParseTable()
 {
     vector<string> vListPro;
@@ -366,6 +371,18 @@ void CParser::PrintParseTable(vector<string> vTerminal, vector<string> vNonTermi
     }
 }
 
+
+/**
+ * Xay dung bang phan tich
+ * @param vProduction           : Tap luat sinh
+ * @param strStart              : Ky tu bat dau
+ * @param vTerminal             : Tap ky tu ket thuc
+ * @param vNonTerminal          : Tap ky tu chua ket thuc
+ * @param mFirstSet             : Tap First
+ * @param mFollowSet            : Tap Follow
+ * @return                      : true neu khong loi
+ *                                false neu co loi
+ */
 bool CParser::PreConstructParseTable(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet, unordered_map<string, vector<string>> &mFollowSet)
 {
     if (vProduction.size() == 0)
@@ -396,6 +413,10 @@ bool CParser::PreConstructParseTable(vector<string> vProduction, string strStart
     return true;
 }
 
+/**
+ * In tap luat sinh
+ * @param vProduction : Tap luat sin
+ */
 void CParser::PrintProduction(vector<string> vProduction)
 {
     for (int i = 0; i < vProduction.size(); i++)
@@ -404,6 +425,11 @@ void CParser::PrintProduction(vector<string> vProduction)
     }
 }
 
+
+/**
+ * In map ra console
+ * @param umMap : map can in
+ */
 void CParser::PrintUnorderedmap(unordered_map<string, vector<string>> umMap)
 {
     for ( auto it = umMap.begin(); it != umMap.end(); ++it )
@@ -418,96 +444,15 @@ void CParser::PrintUnorderedmap(unordered_map<string, vector<string>> umMap)
     std::cout << std::endl;
 }
 
-bool CParser::GetFirstSet(vector<string> vProduction, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet)
-{
-    vector<string> *vList;
-    vector<string> vTmp;
-    vector<string> vToken;
-    string strLeft;
-    int iCount = 0;
-    bool bAllIsTerminal = false;
-
-    if (vProduction.size() == 0)
-    {
-        return  false;
-    }
-
-    if (vTerminal.size() == 0)
-    {
-        return false;
-    }
-
-    if (vNonTerminal.size() == 0)
-    {
-        return false;
-    }
-
-    //Tim tap first cua cac ky tu chua ket thuc
-    mFirstSet.clear();
-    iCount = 0;
-    while (iCount < vNonTerminal.size())
-    {
-        iCount = 0;
-        for (int i = 0; i < vNonTerminal.size(); i++)
-        {
-            auto autoTmp = mFirstSet.find(vNonTerminal.at(i));
-            if (autoTmp == mFirstSet.end())
-            {
-                vList = new vector<string>();
-                GetRight(m_vListProduction, vNonTerminal.at(i), vTmp);
-                for (int j = 0; j < vTmp.size(); j++)
-                {
-                    split(vTmp.at(j), ' ', vToken);
-                    if (vList->size() == 0)
-                    {
-                        vList->push_back(vToken.at(0));
-                        continue;
-                    }
-
-                    if (IndexOf(vToken.at(0), *vList) == true)
-                    {
-                        continue;
-                    }
-                    vList->push_back(vToken.at(0));
-                }
-
-                mFirstSet.insert({vNonTerminal.at(i), *vList});
-            }
-            else
-            {
-                int j = 0;
-                bAllIsTerminal = true;
-                while (j < autoTmp->second.size())
-                {
-                    if (IndexOf(autoTmp->second.at(j), vNonTerminal) == false)
-                    {
-                        j++;
-                        continue;
-                    }
-
-                    auto autoListToken = mFirstSet.find(autoTmp->second.at(j));
-                    for (int k = 0; k < autoListToken->second.size(); k++)
-                    {
-                        if (IndexOf(autoListToken->second.at(k), autoTmp->second) == false)
-                        {
-                            autoTmp->second.push_back(autoListToken->second.at(k));
-                        }
-                    }
-
-                    autoTmp->second.erase(autoTmp->second.begin() + j);
-                    bAllIsTerminal = false;
-                }
-            }
-            if (bAllIsTerminal == true)
-            {
-                iCount++;
-            }
-        }
-    }
-
-    return true;
-}
-
+/**
+ * Tim tap first cua tap cac luat sinh
+ * @param vProduction       : Tap cac luat sinh
+ * @param vTerminal         : Tap cac ky tu ket thuc
+ * @param vNonTerminal      : Tap cac ky tu chua ket thuc
+ * @param mFirstSet         : map, luu tru ket qua tap first
+ * @return                  : true neu khong loi
+ *                            false neu co loi
+ */
 bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> &mFirstSet)
 {
     vector<string> vProductionExtract;
@@ -654,6 +599,18 @@ bool CParser::GetFirstSetNew(vector<string> vProduction, vector<string> vTermina
     return true;
 }
 
+
+/**
+ * Tim tap follow cua tap luat sinh
+ * @param vProduction       : Tap cac luat sinh
+ * @param strStart          : Ky tu bat dau
+ * @param vTerminal         : Tap cac ky tu ket thuc
+ * @param vNonTerminal      : Tap cac ky tu chua ket thuc
+ * @param mFirstSet         : Tap First
+ * @param mFollowSet        : Luu tru ket qua tap follow
+ * @return                  : true neu khong loi
+ *                            false neu co loi
+ */
 bool CParser::GetFollowSet(vector<string> vProduction, string strStart, vector<string> vTerminal, vector<string> vNonTerminal, unordered_map<string, vector<string>> mFirstSet, unordered_map<string, vector<string>> &mFollowSet)
 {
     vector<string> vProductionExtract;
@@ -807,11 +764,15 @@ bool CParser::GetFollowSet(vector<string> vProduction, string strStart, vector<s
 }
 
 /**
- * Tim tap first cua 1 tap cho truoc
- * @param vList
- * @param mFirstSet
- * @param vListResult
- * @return
+ * Tim tap First cua tap cac danh ky tu khi biet tap First cho truoc
+ * @param vList         : Tap cac
+ * @param mFirstSet     : Tap First
+ * @param vTerminal     : Tap cac ky tu ket thuc
+ * @param vListResult   : Luu tru tap first thu duoc
+ * @return              : true neu khong loi
+ *                        false neu loi
+ * VD : S-> A B C D
+ * Tim tap First(ABCD)
  */
 bool CParser::GetFirstSetInList(vector<string> vList, unordered_map<string, vector<string>> mFirstSet, vector<string> vTerminal, vector<string> &vListResult)
 {
@@ -876,11 +837,11 @@ bool CParser::GetFirstSetInList(vector<string> vList, unordered_map<string, vect
 }
 
 /**
- * Lay danh sach tu key dau vao
- * @param mMap
- * @param strKey
- * @return
- */
+* Get danh sach xau tu 1 key trong map
+* @param mMap          : Map dau vao
+* @param strKey        : Key
+* @return              : tra ve con tro toi danh sach xau
+*/
 vector<string>* CParser::GetListInMap(unordered_map<string, vector<string>> &mMap, string strKey)
 {
     vector<string> *vListFirst;
@@ -901,12 +862,12 @@ vector<string>* CParser::GetListInMap(unordered_map<string, vector<string>> &mMa
 }
 
 /**
- * Chen key , value vao map
+ * Insert mot phan tu vao map
  * @param strKey        : key
- * @param strValue      : value
- * @param mMap          : map can chen
- * @return              : true neu khong loi
- *                      : false neu co loi
+ * @param strValue      : gia tri can insert
+ * @param mMap          : map can insert
+ * @return              : true neu co 1 gia tri moi duoc insert
+ *                        false neu khong co su thay doi nao
  */
 bool CParser::InserMap(string strKey, string strValue, unordered_map<string, vector<string>> &mMap)
 {
@@ -934,6 +895,14 @@ bool CParser::InserMap(string strKey, string strValue, unordered_map<string, vec
     return true;
 }
 
+
+/**
+ * Kiem tra xem 1 xau co nam trong 1 mang hay khong
+ * @param strToken      : Xau can kiem tra
+ * @param vTerminal     : Mang can kiem tra
+ * @return              : true neu xau nam trong mang
+ *                        false neu xau khong nam trong mang
+ */
 bool CParser::IndexOf(string strToken, vector<string> vTerminal)
 {
     if (strToken.empty())
@@ -1333,7 +1302,7 @@ bool CParser::GetProduction(const char * szFileName)
         }
 
         //production end with ";" charactor
-        iPos = strLine.find(';');
+        iPos = strLine.find('@');
         if (iPos == -1)
         {
             vList = split(strLine, ' ');
@@ -1405,7 +1374,6 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
             continue;
         }
 
-
         if (SplitProduction(strTmp, strLeft, vListRight) == false)
         {
             continue;
@@ -1440,6 +1408,11 @@ bool CParser::AvoidLeftRecursion(vector<string> &vListProduction)
                 split(strTmpProduction, ':', vList);
                 strAddRight += vList.at(1);
             }
+        }
+
+        if (strNewRight.empty())
+        {
+            strNewRight.append(" " + strAddLeft);
         }
 
         strNewProduction = strLeft + " : " + strNewRight;
